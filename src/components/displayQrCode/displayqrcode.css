@@ -1,0 +1,33 @@
+.displayqrcode_container {
+  display: grid;
+  grid-template-rows: auto auto auto;
+  grid-gap: 2rem;
+  margin: auto;
+}
+.select_tags {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  margin: 2rem;
+}
+.select_tags select {
+  font-size: var(--h2-font-size);
+  border: none;
+  outline: none;
+  border: 1px solid var(--first-color);
+  border-radius: 10px;
+  padding: 0.5rem;
+  font-weight: var(--font-medium);
+  color: var(--first-color);
+}
+.button_div {
+  margin: auto;
+  width: 10rem;
+  margin-top: -20px;
+}
+.displayqrcode_container img {
+  margin: auto;
+  height: 350px;
+  width: auto;
+}
