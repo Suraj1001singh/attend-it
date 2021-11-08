@@ -33,12 +33,32 @@ const DisplayQrCode = () => {
   };
   //-----------OnClick handles-----------------
   const handelOnClick = () => {
-    if (Object.keys(selectedCourse).length != 0 && Object.keys(selectedSubject).length != 0) {
+    if (
+      Object.keys(selectedCourse).length != 0 &&
+      Object.keys(selectedSubject).length != 0
+    ) {
       var today = new Date();
 
       //make changes here to make desired string if you need name : selectedCourse.courseName and selectedSubject.name
 
-      var data = selectedCourse.id + "/" + selectedSubject.id + "/" + today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate() + "/" + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+      var data =
+        selectedCourse.id +
+        "/" +
+        selectedSubject.id +
+        "/" +
+        selectedSubject.name +
+        "/" +
+        today.getFullYear() +
+        "-" +
+        (today.getMonth() + 1) +
+        "-" +
+        today.getDate() +
+        "/" +
+        today.getHours() +
+        ":" +
+        today.getMinutes() +
+        ":" +
+        today.getSeconds();
       console.log("hope it will work", data);
       GenerateQrCode(data);
       storeLink(data);
@@ -80,7 +100,10 @@ const DisplayQrCode = () => {
   useEffect(() => {
     const getSubjects = async () => {
       if (Object.keys(selectedCourse).length != 0) {
-        const subjectCollectionRef = collection(db, `courses/${selectedCourse.id}/subject`);
+        const subjectCollectionRef = collection(
+          db,
+          `courses/${selectedCourse.id}/subject`
+        );
         const data = await getDocs(subjectCollectionRef);
         setSubjectList(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
       }
@@ -96,7 +119,11 @@ const DisplayQrCode = () => {
           <div className="select_tags">
             {/* ------------------------Course selector ----------------- */}
 
-            <select name="Course Name" id="course" onChange={(e) => handelOnChangeCourse(e)}>
+            <select
+              name="Course Name"
+              id="course"
+              onChange={(e) => handelOnChangeCourse(e)}
+            >
               <option>Select Course</option>
               {courseList.map((course) => (
                 <option key={course.id} value={course.id}>
@@ -106,7 +133,11 @@ const DisplayQrCode = () => {
             </select>
             {/* ------------------------Subject selector ----------------- */}
 
-            <select name="Subject Name" id="subject" onChange={(e) => handelOnChangeSubject(e)}>
+            <select
+              name="Subject Name"
+              id="subject"
+              onChange={(e) => handelOnChangeSubject(e)}
+            >
               <option>Select Subject</option>
               {subjectList.map((subject) => (
                 <option key={subject.id} value={subject.id}>
