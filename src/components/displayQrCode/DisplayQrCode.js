@@ -12,8 +12,8 @@ const DisplayQrCode = () => {
   const [courseList, setCourseList] = useState([]);
   const [subjectList, setSubjectList] = useState([]);
 
-  const [selectedCourse, setSelectedCourse] = useState("");
-  const [selectedSubject, setSelectedSubject] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState({});
+  const [selectedSubject, setSelectedSubject] = useState({});
 
   //----------------db references------
   const userCollectionRef = collection(db, "qrlink");
@@ -33,9 +33,13 @@ const DisplayQrCode = () => {
   };
   //-----------OnClick handles-----------------
   const handelOnClick = () => {
-    if (selectedCourse && selectedSubject) {
+    if (Object.keys(selectedCourse).length != 0 && Object.keys(selectedSubject).length != 0) {
       var today = new Date();
-      var data = selectedCourse + "/" + selectedSubject + "/" + today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate() + "/" + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+
+      //make changes here to make desired string if you need name : selectedCourse.courseName and selectedSubject.name
+
+      var data = selectedCourse.id + "/" + selectedSubject.id + "/" + today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate() + "/" + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+      console.log("hope it will work", data);
       GenerateQrCode(data);
       storeLink(data);
     } else {
@@ -45,39 +49,41 @@ const DisplayQrCode = () => {
 
   const handelOnChangeCourse = (e) => {
     e.preventDefault();
-
-    setSelectedCourse(courseList[e.target.value]);
+    setSelectedCourse(
+      ...courseList.filter((course) => {
+        if (course.id === e.target.value) return course;
+      })
+    );
   };
   const handelOnChangeSubject = (e) => {
     e.preventDefault();
-
-    setSelectedSubject(subjectList[e.target.value]);
+    setSelectedSubject(
+      ...subjectList.filter((subject) => {
+        if (subject.id === e.target.value) return subject;
+      })
+    );
   };
+
   const storeLink = async (newdata) => {
     await addDoc(userCollectionRef, { link: newdata });
   };
   //------this useEffect for fetching coursesList
   useEffect(() => {
-    const setCourses = async () => {
+    const getCourses = async () => {
       const data = await getDocs(coursesCollectionRef);
-
-      const dataArray = data.docs.map((doc) => ({ ...doc.data() }));
-
-      dataArray.map((i) => {
-        setCourseList((prev) => prev.concat(i.name));
-      });
+      const dataArray = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+      setCourseList(dataArray);
     };
-    setCourses();
+    getCourses();
   }, []);
-  //-------this useEffect for fetching subjectList after selecting courses
+  // -------this useEffect for fetching subjectList after selecting courses
   useEffect(() => {
     const getSubjects = async () => {
-      const q = query(coursesCollectionRef, where("name", "==", selectedCourse));
-      const querySnapshot = await getDocs(q);
-      querySnapshot.forEach((doc) => {
-        console.log(doc.id, " => ", doc.data().subjects);
-        setSubjectList(doc.data().subjects);
-      });
+      if (Object.keys(selectedCourse).length != 0) {
+        const subjectCollectionRef = collection(db, `courses/${selectedCourse.id}/subject`);
+        const data = await getDocs(subjectCollectionRef);
+        setSubjectList(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      }
     };
     getSubjects();
   }, [selectedCourse]);
@@ -89,23 +95,22 @@ const DisplayQrCode = () => {
         <div className="displayqrcode_container bd-grid">
           <div className="select_tags">
             {/* ------------------------Course selector ----------------- */}
-            {/* <label for="course">Course Name :</label> */}
-            <select name="Course Name" id="course" onChange={(e) => handelOnChangeCourse(e)}>
-              <option value="">Select Course</option>
 
-              {courseList.map((name, index) => (
-                <option key={index} value={index}>
-                  {name}
+            <select name="Course Name" id="course" onChange={(e) => handelOnChangeCourse(e)}>
+              <option>Select Course</option>
+              {courseList.map((course) => (
+                <option key={course.id} value={course.id}>
+                  {course.courseName}
                 </option>
               ))}
             </select>
             {/* ------------------------Subject selector ----------------- */}
-            {/* <label for="course">Subject Name :</label> */}
+
             <select name="Subject Name" id="subject" onChange={(e) => handelOnChangeSubject(e)}>
-              <option value="">Select Subject</option>
-              {subjectList.map((name, index) => (
-                <option key={index} value={index}>
-                  {name}
+              <option>Select Subject</option>
+              {subjectList.map((subject) => (
+                <option key={subject.id} value={subject.id}>
+                  {subject.name}
                 </option>
               ))}
             </select>
