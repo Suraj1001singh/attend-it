@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import QRCode from "qrcode";
 import db from "../../firebase-config";
-import { collection, getDocs, addDoc } from "@firebase/firestore";
+import { collection, getDocs, addDoc, query, where } from "@firebase/firestore";
 import "./displayqrcode.css";
 import Navbar from "../navbar/Navbar,";
 
@@ -9,14 +9,15 @@ const DisplayQrCode = () => {
   const [src, setSrc] = useState("");
 
   //this will be fetched from api
-  const [courseList, setCourseList] = useState(["MCA", "Btech CS", "MBA"]);
-  const [subjectList, setSubjectList] = useState(["C programming", "Digital electronics"]);
+  const [courseList, setCourseList] = useState([]);
+  const [subjectList, setSubjectList] = useState([]);
 
   const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
 
   //----------------db references------
   const userCollectionRef = collection(db, "qrlink");
+  const coursesCollectionRef = collection(db, "courses");
 
   //-----QR code generator-----------------
   const GenerateQrCode = async (newData) => {
@@ -55,7 +56,31 @@ const DisplayQrCode = () => {
   const storeLink = async (newdata) => {
     await addDoc(userCollectionRef, { link: newdata });
   };
- 
+  //------this useEffect for fetching coursesList
+  useEffect(() => {
+    const setCourses = async () => {
+      const data = await getDocs(coursesCollectionRef);
+
+      const dataArray = data.docs.map((doc) => ({ ...doc.data() }));
+
+      dataArray.map((i) => {
+        setCourseList((prev) => prev.concat(i.name));
+      });
+    };
+    setCourses();
+  }, []);
+  //-------this useEffect for fetching subjectList after selecting courses
+  useEffect(() => {
+    const getSubjects = async () => {
+      const q = query(coursesCollectionRef, where("name", "==", selectedCourse));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => {
+        console.log(doc.id, " => ", doc.data().subjects);
+        setSubjectList(doc.data().subjects);
+      });
+    };
+    getSubjects();
+  }, [selectedCourse]);
 
   return (
     <>
@@ -67,6 +92,7 @@ const DisplayQrCode = () => {
             {/* <label for="course">Course Name :</label> */}
             <select name="Course Name" id="course" onChange={(e) => handelOnChangeCourse(e)}>
               <option value="">Select Course</option>
+
               {courseList.map((name, index) => (
                 <option key={index} value={index}>
                   {name}
