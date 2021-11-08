@@ -38,8 +38,7 @@ const DisplayQrCode = () => {
 
       //make changes here to make desired string if you need name : selectedCourse.courseName and selectedSubject.name
 
-      var data = selectedCourse.id + "/" + selectedSubject.id + "/" + today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate() + "/" + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-      console.log("hope it will work", data);
+      var data = selectedCourse.id + "/" + selectedSubject.id + "/" + selectedSubject.name + "/" + today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate() + "/" + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
       GenerateQrCode(data);
       storeLink(data);
     } else {
